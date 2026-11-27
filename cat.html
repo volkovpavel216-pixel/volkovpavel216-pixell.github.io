@@ -1,0 +1,915 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIBE COBING — ЦИФРОВОЕ БУДУЩЕЕ | ПИШИ ВАЙБ</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #00f5d4;
+      --accent-2: #ff007f;
+      --bg-deep: #06070d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-deep);
+      color: #f8fafc;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+    .glass {
+      background: rgba(13, 16, 30, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .neon-text {
+      text-shadow: 0 0 18px rgba(0, 245, 212, 0.55), 0 0 36px rgba(255, 0, 127, 0.35);
+    }
+    .overdrive-active {
+      animation: pulseBorder 1.1s infinite alternate;
+    }
+    @keyframes pulseBorder {
+      from { box-shadow: 0 0 14px rgba(255, 0, 127, 0.35), inset 0 0 12px rgba(0, 245, 212, 0.15); }
+      to { box-shadow: 0 0 30px rgba(0, 245, 212, 0.65), inset 0 0 22px rgba(255, 0, 127, 0.25); }
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent);
+      border: 2px solid #06070d;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Background Canvas -->
+  <canvas id="vibeCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-xl glass border border-emerald-400/40 text-emerald-200 text-sm font-medium shadow-2xl transition-all">
+    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastText">Готово</span>
+  </div>
+
+  <!-- Info Modal -->
+  <div id="infoModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="glass rounded-2xl max-w-lg w-full p-6 border border-white/15 shadow-2xl relative">
+      <button id="closeModalBtn" class="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 text-slate-300" aria-label="Закрыть">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-xs font-semibold mb-3">
+        КОНЦЕПЦИЯ ПРОЕКТА
+      </div>
+      <h2 class="text-2xl font-extrabold tracking-tight mb-2">VIBE COBING</h2>
+      <p class="text-sm text-slate-300 leading-relaxed mb-4">
+        <strong class="text-white">VIBE COBING</strong> — экспериментальная среда вайб-кодинга нового поколения:
+        «<span class="text-cyan-300">ЦИФРОВОЕ БУДУЩЕЕ | ПИШИ ВАЙБ</span>». Вместо сухого ручного кода разработчик задаёт
+        настроение, ритм и вектор, а система синхронно собирает визуальный мир, звуковой синтез и рабочий код-каркас.
+      </p>
+      <ul class="space-y-2 text-sm text-slate-300 mb-5">
+        <li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">01.</span><span>Выбирайте режим энергии или вводите свой вайб-промпт.</span></li>
+        <li class="flex items-start gap-2"><span class="text-pink-400 font-bold">02.</span><span>Крутите параметры реальности (Неон, Хаос, Пульс, Кот-фактор).</span></li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">03.</span><span>Включайте Web Audio-синт и режим «МАКСИМУМ» для полного погружения.</span></li>
+      </ul>
+      <button id="modalOkBtn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-slate-950 font-bold text-sm hover:opacity-95 transition">
+        Погнали кодить вайб
+      </button>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <header class="relative z-10 border-b border-white/10 glass">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-amber-400 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="zap" class="w-5 h-5 text-slate-950"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg sm:text-xl font-black tracking-wider neon-text">VIBE COBING</h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded-full bg-fuchsia-500/20 border border-fuchsia-400/40 text-fuchsia-300">
+              НА МАКСИМУМЕ
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-400 tracking-widest uppercase">
+            ЦИФРОВОЕ БУДУЩЕЕ | ПИШИ ВАЙБ
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="audioToggleBtn" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl glass hover:bg-white/10 text-xs sm:text-sm font-semibold transition border border-white/15">
+          <i data-lucide="volume-x" id="audioIcon" class="w-4 h-4 text-slate-300"></i>
+          <span id="audioLabel">Звук: Выкл</span>
+        </button>
+        <button id="overdriveBtn" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-amber-500 hover:brightness-110 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-fuchsia-600/25 transition">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+          <span id="overdriveLabel">МАКСИМУМ</span>
+        </button>
+        <button id="openModalBtn" class="p-2 rounded-xl glass hover:bg-white/10 text-slate-300 transition" title="О проекте" aria-label="О проекте">
+          <i data-lucide="info" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Left Column: Vibe Controls -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+
+      <!-- Prompt Input Card -->
+      <div id="promptCard" class="glass rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-widest text-cyan-300 flex items-center gap-1.5">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Вайб-промпт
+          </span>
+          <span id="statusBadge" class="text-[11px] font-medium text-emerald-300 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Поток активен
+          </span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input
+            id="vibeInput"
+            type="text"
+            value="Неоновый город будущего под дождём из кода"
+            placeholder="Опиши свой вайб..."
+            class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/45 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+          />
+          <button id="synthesizeBtn" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-sm transition flex items-center justify-center gap-1.5 shrink-0">
+            <i data-lucide="wand-2" class="w-4 h-4"></i>
+            <span>Зарядить</span>
+          </button>
+        </div>
+
+        <!-- Quick Vibe Chips -->
+        <div class="flex flex-wrap gap-1.5 pt-1">
+          <button class="chip-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs text-slate-300 transition" data-prompt="Кибер-рейв на орбите Сатурна">⚡ Кибер-рейв</button>
+          <button class="chip-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs text-slate-300 transition" data-prompt="Цифровой дзен в стеклянном лесу">🌌 Цифровой дзен</button>
+          <button class="chip-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs text-slate-300 transition" data-prompt="Ночной кот-хакер в неоновом Токио">🐱 Кот-хакер</button>
+          <button class="chip-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-xs text-slate-300 transition" data-prompt="Абсолютный глитч-гиперпрыжок">🔥 Гиперпрыжок</button>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="glass rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="text-xs font-bold uppercase tracking-widest text-slate-300">Энерго-пресеты</div>
+        <div class="grid grid-cols-2 gap-2.5" id="presetGrid">
+          <button data-preset="synthwave" class="preset-btn text-left p-3 rounded-xl border transition">
+            <div class="text-sm font-bold">⚡ Неон-Синтвейв</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Ретро-сетка и кибер-арпеджио</div>
+          </button>
+          <button data-preset="quantum" class="preset-btn text-left p-3 rounded-xl border transition">
+            <div class="text-sm font-bold">🌌 Квантовый Дзен</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Гравитация и мягкий эмбиент</div>
+          </button>
+          <button data-preset="glitch" class="preset-btn text-left p-3 rounded-xl border transition">
+            <div class="text-sm font-bold">🔥 Глитч-Матрица</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Кислотный поток и бит</div>
+          </button>
+          <button data-preset="cybercat" class="preset-btn text-left p-3 rounded-xl border transition">
+            <div class="text-sm font-bold">🐱 Кибер-Котик</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Неоновые ушки и лоу-фай</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sliders -->
+      <div class="glass rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-widest text-slate-300">Параметры реальности</span>
+          <button id="randomizeBtn" class="text-xs text-cyan-300 hover:text-cyan-200 font-semibold flex items-center gap-1">
+            <i data-lucide="shuffle" class="w-3.5 h-3.5"></i> Случайно
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">Неон-поток (Частицы)</span>
+              <span id="valNeon" class="mono text-cyan-300 font-semibold">75%</span>
+            </div>
+            <input id="sliderNeon" type="range" min="10" max="100" value="75" class="w-full" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">Хаос-матрица (Турбулентность)</span>
+              <span id="valChaos" class="mono text-fuchsia-300 font-semibold">45%</span>
+            </div>
+            <input id="sliderChaos" type="range" min="0" max="100" value="45" class="w-full" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">Темп пульса (BPM)</span>
+              <span id="valBpm" class="mono text-amber-300 font-semibold">118 BPM</span>
+            </div>
+            <input id="sliderBpm" type="range" min="70" max="175" value="118" class="w-full" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">Кот-фактор (Магия)</span>
+              <span id="valCat" class="mono text-pink-300 font-semibold">30%</span>
+            </div>
+            <input id="sliderCat" type="range" min="0" max="100" value="30" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Live Stage + Generated Code -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+
+      <!-- Live Telemetry Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="glass rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase">Индекс вайба</div>
+          <div id="metricVibe" class="text-xl font-black text-cyan-300 mono mt-0.5">94%</div>
+        </div>
+        <div class="glass rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase">Резонанс</div>
+          <div id="metricFreq" class="text-xl font-black text-fuchsia-300 mono mt-0.5">432 Hz</div>
+        </div>
+        <div class="glass rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase">Синхронизация</div>
+          <div id="metricSync" class="text-xl font-black text-emerald-300 mono mt-0.5">60 FPS</div>
+        </div>
+        <div class="glass rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase">Режим</div>
+          <div id="metricMode" class="text-xl font-black text-amber-300 mono mt-0.5">СИНТ</div>
+        </div>
+      </div>
+
+      <!-- Interactive Blueprint / Code Tabs -->
+      <div class="glass rounded-2xl p-4 sm:p-5 flex-1 flex flex-col min-h-[380px]">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
+          <div class="flex items-center gap-1.5" role="tablist">
+            <button data-tab="code" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              &lt;/&gt; Живой Вайб-Код
+            </button>
+            <button data-tab="architecture" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              ⚡ Архитектура
+            </button>
+            <button data-tab="manifest" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              🚀 Манифест
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="copyCodeBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Копировать
+            </button>
+            <button id="exportBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-200 text-xs font-semibold transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Экспорт JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent" class="flex-1 pt-4 overflow-auto">
+          <pre id="codeOutput" class="mono text-xs sm:text-[13px] leading-relaxed text-cyan-100 whitespace-pre-wrap break-words"></pre>
+        </div>
+
+        <!-- Interactive Canvas Hint Bar -->
+        <div class="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+          <span>Двигай курсором или касайся экрана — частицы реагируют на твой импульс.</span>
+          <span id="activePromptEcho" class="mono text-cyan-300 truncate max-w-xs"></span>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // ---------- State ----------
+    const PRESETS = {
+      synthwave: {
+        label: 'СИНТ',
+        colors: ['#00f5d4', '#ff007f', '#7b2cbf'],
+        bg: '#06070d',
+        neon: 80,
+        chaos: 45,
+        bpm: 118,
+        cat: 20,
+        baseFreq: 220,
+        scale: [0, 3, 7, 10, 12, 15],
+        arch: [
+          { title: 'Визуальное ядро', desc: 'Реактивная ретро-сетка + 60fps векторный поток частиц' },
+          { title: 'Звуковой движок', desc: 'Web Audio арпеджиатор на минорной пентатонике' },
+          { title: 'Вайб-компилятор', desc: 'Мгновенная трансляция промпта в шейдерные константы' }
+        ]
+      },
+      quantum: {
+        label: 'ДЗЕН',
+        colors: ['#38bdf8', '#34d399', '#818cf8'],
+        bg: '#030b14',
+        neon: 60,
+        chaos: 20,
+        bpm: 84,
+        cat: 15,
+        baseFreq: 174,
+        scale: [0, 4, 7, 11, 14],
+        arch: [
+          { title: 'Гравитационный цикл', desc: 'Плавные орбитальные аттракторы без резких углов' },
+          { title: 'Эмбиент-синтез', desc: 'Мягкие синусоидальные волны с низким фильтром' },
+          { title: 'Поток внимания', desc: 'Минималистичный интерфейс для глубокого фокуса' }
+        ]
+      },
+      glitch: {
+        label: 'ГЛИТЧ',
+        colors: ['#a3e635', '#f43f5e', '#facc15'],
+        bg: '#09040a',
+        neon: 95,
+        chaos: 88,
+        bpm: 145,
+        cat: 10,
+        baseFreq: 130,
+        scale: [0, 1, 5, 7, 8, 12],
+        arch: [
+          { title: 'Матрица разлома', desc: 'Высокоскоростные векторы с импульсным джиттером' },
+          { title: 'Индустриальный пульс', desc: 'Пилообразный бас и агрессивная синхронизация BPM' },
+          { title: 'Овердрайв-буфер', desc: 'Автоматический буст плотности при пиковом хаосе' }
+        ]
+      },
+      cybercat: {
+        label: 'КОТИК',
+        colors: ['#ff70a6', '#ffd670', '#70d6ff'],
+        bg: '#0d0614',
+        neon: 75,
+        chaos: 35,
+        bpm: 102,
+        cat: 100,
+        baseFreq: 261.63,
+        scale: [0, 2, 4, 7, 9, 12],
+        arch: [
+          { title: 'Нейро-котики', desc: 'Парящие неоновые мордочки и звёздные следы' },
+          { title: 'Лоу-фай мурлыканье', desc: 'Тёплый треугольный синт в мажорной пентатонике' },
+          { title: 'Уют будущего', desc: 'Баланс киберпанка и 100% положительного вайба' }
+        ]
+      }
+    };
+
+    const state = {
+      preset: 'synthwave',
+      prompt: 'Неоновый город будущего под дождём из кода',
+      neon: 80,
+      chaos: 45,
+      bpm: 118,
+      cat: 20,
+      overdrive: false,
+      audioOn: false,
+      activeTab: 'code',
+      pointer: { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false }
+    };
+
+    // ---------- DOM Refs ----------
+    const canvas = document.getElementById('vibeCanvas');
+    const ctx = canvas.getContext('2d');
+    const vibeInput = document.getElementById('vibeInput');
+    const sliderNeon = document.getElementById('sliderNeon');
+    const sliderChaos = document.getElementById('sliderChaos');
+    const sliderBpm = document.getElementById('sliderBpm');
+    const sliderCat = document.getElementById('sliderCat');
+    const valNeon = document.getElementById('valNeon');
+    const valChaos = document.getElementById('valChaos');
+    const valBpm = document.getElementById('valBpm');
+    const valCat = document.getElementById('valCat');
+    const codeOutput = document.getElementById('codeOutput');
+    const tabContent = document.getElementById('tabContent');
+
+    // ---------- Toast ----------
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastText').textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2400);
+    }
+
+    // ---------- Web Audio Synth ----------
+    let audioCtx = null;
+    let synthTimer = null;
+    let stepIndex = 0;
+
+    function playNote() {
+      if (!state.audioOn || !audioCtx) return;
+      const p = PRESETS[state.preset];
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+
+      const semitone = p.scale[stepIndex % p.scale.length];
+      const octaveShift = (stepIndex % 8 === 7 || state.overdrive) ? 12 : 0;
+      const freq = p.baseFreq * Math.pow(2, (semitone + octaveShift) / 12);
+
+      osc.type = state.preset === 'glitch' ? 'sawtooth' : (state.preset === 'cybercat' ? 'triangle' : 'sine');
+      osc.frequency.setValueAtTime(freq, now);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(600 + state.neon * 22 + (state.overdrive ? 1200 : 0), now);
+
+      const dur = 60 / state.bpm;
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(state.overdrive ? 0.14 : 0.08, now + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.9);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + dur);
+      stepIndex++;
+    }
+
+    function restartSynthLoop() {
+      clearInterval(synthTimer);
+      if (!state.audioOn) return;
+      const intervalMs = Math.max(120, Math.round((60 / state.bpm / 2) * 1000));
+      playNote();
+      synthTimer = setInterval(playNote, intervalMs);
+    }
+
+    function toggleAudio() {
+      state.audioOn = !state.audioOn;
+      if (state.audioOn) {
+        if (!audioCtx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AC();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        restartSynthLoop();
+        showToast('Синтезатор вайба запущен');
+      } else {
+        clearInterval(synthTimer);
+        showToast('Звук выключен');
+      }
+      renderControls();
+    }
+
+    // ---------- Particle Engine ----------
+    let particles = [];
+    let animId = null;
+    let tick = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function syncParticles() {
+      const target = Math.round((state.neon / 100) * (state.overdrive ? 160 : 95)) + 15;
+      const p = PRESETS[state.preset];
+      while (particles.length < target) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 1.6,
+          vy: (Math.random() - 0.5) * 1.6,
+          r: Math.random() * 3 + 1.5,
+          color: p.colors[Math.floor(Math.random() * p.colors.length)],
+          isCat: Math.random() * 100 < state.cat
+        });
+      }
+      if (particles.length > target) particles.length = target;
+      particles.forEach((pt, idx) => {
+        pt.color = p.colors[idx % p.colors.length];
+        pt.isCat = (idx % 100) < state.cat;
+      });
+    }
+
+    function drawCatSilhouette(x, y, size, color) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.fill();
+      // Ears
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.85, -size * 0.3);
+      ctx.lineTo(-size * 0.55, -size * 1.25);
+      ctx.lineTo(-size * 0.1, -size * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(size * 0.85, -size * 0.3);
+      ctx.lineTo(size * 0.55, -size * 1.25);
+      ctx.lineTo(size * 0.1, -size * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function animate() {
+      tick += 0.02 * (state.bpm / 110) * (state.overdrive ? 1.8 : 1);
+      const p = PRESETS[state.preset];
+      ctx.fillStyle = state.overdrive ? 'rgba(6, 7, 13, 0.22)' : 'rgba(6, 7, 13, 0.3)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Cyber horizon grid
+      ctx.save();
+      ctx.strokeStyle = p.colors[0] + '18';
+      ctx.lineWidth = 1;
+      const step = 64;
+      const offset = (tick * 25) % step;
+      for (let x = 0; x < canvas.width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = offset; y < canvas.height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const speedMult = (0.5 + state.chaos / 45) * (state.overdrive ? 2.1 : 1);
+
+      for (let i = 0; i < particles.length; i++) {
+        const pt = particles[i];
+        pt.x += pt.vx * speedMult + Math.sin(tick + i) * (state.chaos / 90);
+        pt.y += pt.vy * speedMult + Math.cos(tick + i) * (state.chaos / 90);
+
+        if (state.pointer.active) {
+          const dx = state.pointer.x - pt.x;
+          const dy = state.pointer.y - pt.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 180 && dist > 1) {
+            pt.x += (dx / dist) * 1.4;
+            pt.y += (dy / dist) * 1.4;
+          }
+        }
+
+        if (pt.x < -20) pt.x = canvas.width + 20;
+        if (pt.x > canvas.width + 20) pt.x = -20;
+        if (pt.y < -20) pt.y = canvas.height + 20;
+        if (pt.y > canvas.height + 20) pt.y = -20;
+
+        if (pt.isCat && state.cat > 5) {
+          drawCatSilhouette(pt.x, pt.y, pt.r * 2.1, pt.color);
+        } else {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fillStyle = pt.color;
+          ctx.fill();
+        }
+
+        // Connect nearby nodes
+        for (let j = i + 1; j < particles.length; j++) {
+          const pt2 = particles[j];
+          const d = Math.hypot(pt.x - pt2.x, pt.y - pt2.y);
+          if (d < 105) {
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y);
+            ctx.lineTo(pt2.x, pt2.y);
+            ctx.strokeStyle = pt.color + '22';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      animId = requestAnimationFrame(animate);
+    }
+
+    // ---------- Code & Blueprint Generator ----------
+    function generateVibeCode() {
+      const p = PRESETS[state.preset];
+      const safePrompt = state.prompt.replace(/"/g, '\\"');
+      return `// VIBE COBING :: ЦИФРОВОЕ БУДУЩЕЕ | ПИШИ ВАЙБ
+// Режим: ${p.label} ${state.overdrive ? '[МАКСИМУМ OVERDRIVE]' : '[СТАНДАРТ]'}
+
+import { VibeEngine, SynthPulse } from "@vibecobing/core";
+
+export const session = new VibeEngine({
+  prompt: "${safePrompt}",
+  preset: "${state.preset}",
+  reality: {
+    neonFlow: ${state.neon},          // плотность частиц
+    chaosMatrix: ${state.chaos},       // турбулентность поля
+    tempoBPM: ${state.bpm},           // ритм генерации
+    catFactor: ${state.cat},          // индекс кибер-котиков
+    overdrive: ${state.overdrive}
+  },
+  palette: ${JSON.stringify(p.colors)}
+});
+
+session.on("pulse", ({ frame, resonance }) => {
+  SynthPulse.trigger({
+    baseHz: ${p.baseFreq},
+    energy: ${(state.neon * 0.6 + state.chaos * 0.4).toFixed(1)},
+    renderCatHolograms: ${state.cat >= 35}
+  });
+});
+
+session.ignite(); // -> 60 FPS поток запущен`;
+    }
+
+    function renderTab() {
+      const p = PRESETS[state.preset];
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const active = btn.dataset.tab === state.activeTab;
+        btn.className = `tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+          active ? 'bg-cyan-400 text-slate-950' : 'bg-white/5 text-slate-300 hover:bg-white/10'
+        }`;
+      });
+
+      if (state.activeTab === 'code') {
+        tabContent.innerHTML = `<pre id="codeOutput" class="mono text-xs sm:text-[13px] leading-relaxed text-cyan-100 whitespace-pre-wrap break-words"></pre>`;
+        document.getElementById('codeOutput').textContent = generateVibeCode();
+      } else if (state.activeTab === 'architecture') {
+        tabContent.innerHTML = `
+          <div class="space-y-3">
+            <div class="text-xs text-slate-400">Активный стек для сценария: <span class="text-cyan-300 font-semibold">${escapeHtml(state.prompt)}</span></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              ${p.arch.map((item, i) => `
+                <div class="p-3.5 rounded-xl bg-black/40 border border-white/10">
+                  <div class="text-[11px] mono text-fuchsia-300 mb-1">МОДУЛЬ 0${i + 1}</div>
+                  <div class="text-sm font-bold text-white mb-1">${item.title}</div>
+                  <div class="text-xs text-slate-300 leading-relaxed">${item.desc}</div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-400/25 text-xs text-cyan-100 leading-relaxed">
+              <strong>Как работает VIBE COBING:</strong> Промпт преобразуется в числовой вектор энергии,
+              который одновременно управляет геометрией Canvas, тональностью Web Audio-синтезатора и шаблоном кода.
+            </div>
+          </div>
+        `;
+      } else {
+        tabContent.innerHTML = `
+          <div class="space-y-3 text-sm text-slate-200 leading-relaxed">
+            <div class="p-4 rounded-xl bg-gradient-to-br from-fuchsia-500/15 to-cyan-500/15 border border-white/15">
+              <div class="text-xs font-bold uppercase tracking-widest text-amber-300 mb-1">Манифест VIBE COBING</div>
+              <p class="font-semibold text-white">Код — это больше не сухая инструкция. Код — это цифровая музыка, свет и настроение.</p>
+            </div>
+            <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
+              <li>• <strong class="text-white">Пиши вайб, а не бойлерплейт:</strong> формулируй образ, а среда сама подбирает ритм и палитру.</li>
+              <li>• <strong class="text-white">Мгновенная обратная связь:</strong> каждое движение слайдера меняет мир в реальном времени.</li>
+              <li>• <strong class="text-white">Проект на максимуме:</strong> никаких компромиссов между эстетикой, звуком и технологией.</li>
+            </ul>
+          </div>
+        `;
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function renderControls() {
+      const p = PRESETS[state.preset];
+      document.documentElement.style.setProperty('--accent', p.colors[0]);
+      document.documentElement.style.setProperty('--accent-2', p.colors[1]);
+
+      valNeon.textContent = `${state.neon}%`;
+      valChaos.textContent = `${state.chaos}%`;
+      valBpm.textContent = `${state.bpm} BPM`;
+      valCat.textContent = `${state.cat}%`;
+
+      sliderNeon.value = state.neon;
+      sliderChaos.value = state.chaos;
+      sliderBpm.value = state.bpm;
+      sliderCat.value = state.cat;
+
+      // Metrics
+      const vibeScore = Math.min(100, Math.round((state.neon * 0.45 + (100 - Math.abs(state.chaos - 50)) * 0.35 + (state.overdrive ? 25 : 15))));
+      document.getElementById('metricVibe').textContent = `${vibeScore}%`;
+      document.getElementById('metricFreq').textContent = `${Math.round(p.baseFreq * (state.overdrive ? 1.5 : 1))} Hz`;
+      document.getElementById('metricMode').textContent = state.overdrive ? 'MAX!' : p.label;
+      document.getElementById('activePromptEcho').textContent = `"${state.prompt}"`;
+
+      // Presets styling
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        const active = btn.dataset.preset === state.preset;
+        btn.className = `preset-btn text-left p-3 rounded-xl border transition ${
+          active
+            ? 'bg-cyan-400/15 border-cyan-400 text-white shadow-lg shadow-cyan-500/10'
+            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+        }`;
+      });
+
+      // Audio button
+      const audioIcon = document.getElementById('audioIcon');
+      const audioLabel = document.getElementById('audioLabel');
+      audioLabel.textContent = state.audioOn ? 'Звук: Вкл' : 'Звук: Выкл';
+      audioIcon.setAttribute('data-lucide', state.audioOn ? 'volume-2' : 'volume-x');
+      audioIcon.className = `w-4 h-4 ${state.audioOn ? 'text-emerald-400' : 'text-slate-300'}`;
+
+      // Overdrive
+      const promptCard = document.getElementById('promptCard');
+      const odLabel = document.getElementById('overdriveLabel');
+      if (state.overdrive) {
+        promptCard.classList.add('overdrive-active');
+        odLabel.textContent = 'MAX ВКЛ!';
+      } else {
+        promptCard.classList.remove('overdrive-active');
+        odLabel.textContent = 'МАКСИМУМ';
+      }
+
+      syncParticles();
+      renderTab();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // ---------- Event Listeners ----------
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.preset;
+        const p = PRESETS[key];
+        state.preset = key;
+        state.neon = p.neon;
+        state.chaos = p.chaos;
+        state.bpm = p.bpm;
+        state.cat = p.cat;
+        if (state.audioOn) restartSynthLoop();
+        renderControls();
+        showToast(`Пресет «${p.label}» активирован`);
+      });
+    });
+
+    document.querySelectorAll('.chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.prompt = btn.dataset.prompt;
+        vibeInput.value = state.prompt;
+        if (state.prompt.toLowerCase().includes('кот')) {
+          state.preset = 'cybercat';
+          state.cat = 100;
+        }
+        renderControls();
+        showToast('Вайб-промпт обновлён');
+      });
+    });
+
+    document.getElementById('synthesizeBtn').addEventListener('click', () => {
+      const text = vibeInput.value.trim();
+      if (!text) {
+        showToast('Введи хоть пару слов для вайба!');
+        return;
+      }
+      state.prompt = text;
+      if (text.toLowerCase().includes('кот')) {
+        state.cat = Math.max(state.cat, 80);
+      }
+      renderControls();
+      showToast('Код и поток пересобраны!');
+    });
+
+    vibeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('synthesizeBtn').click();
+    });
+
+    sliderNeon.addEventListener('input', (e) => { state.neon = Number(e.target.value); renderControls(); });
+    sliderChaos.addEventListener('input', (e) => { state.chaos = Number(e.target.value); renderControls(); });
+    sliderBpm.addEventListener('input', (e) => {
+      state.bpm = Number(e.target.value);
+      if (state.audioOn) restartSynthLoop();
+      renderControls();
+    });
+    sliderCat.addEventListener('input', (e) => { state.cat = Number(e.target.value); renderControls(); });
+
+    document.getElementById('randomizeBtn').addEventListener('click', () => {
+      const keys = Object.keys(PRESETS);
+      state.preset = keys[Math.floor(Math.random() * keys.length)];
+      state.neon = Math.floor(Math.random() * 65) + 35;
+      state.chaos = Math.floor(Math.random() * 85) + 10;
+      state.bpm = Math.floor(Math.random() * 90) + 80;
+      state.cat = Math.floor(Math.random() * 101);
+      if (state.audioOn) restartSynthLoop();
+      renderControls();
+      showToast('Случайный вайб сгенерирован');
+    });
+
+    document.getElementById('overdriveBtn').addEventListener('click', () => {
+      state.overdrive = !state.overdrive;
+      if (state.overdrive && typeof confetti === 'function') {
+        confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 }, colors: PRESETS[state.preset].colors });
+      }
+      if (state.audioOn) restartSynthLoop();
+      renderControls();
+      showToast(state.overdrive ? 'РЕЖИМ МАКСИМУМ АКТИВИРОВАН!' : 'Обычный режим');
+    });
+
+    document.getElementById('audioToggleBtn').addEventListener('click', toggleAudio);
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activeTab = btn.dataset.tab;
+        renderTab();
+      });
+    });
+
+    document.getElementById('copyCodeBtn').addEventListener('click', () => {
+      const txt = generateVibeCode();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => showToast('Вайб-код скопирован')).catch(() => fallbackCopy(txt));
+      } else {
+        fallbackCopy(txt);
+      }
+    });
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Вайб-код скопирован'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const payload = {
+        project: 'VIBE COBING',
+        tagline: 'ЦИФРОВОЕ БУДУЩЕЕ | ПИШИ ВАЙБ',
+        preset: state.preset,
+        prompt: state.prompt,
+        reality: { neon: state.neon, chaos: state.chaos, bpm: state.bpm, catFactor: state.cat, overdrive: state.overdrive },
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vibe-cobing-config.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Конфиг экспортирован в JSON');
+    });
+
+    // Modal
+    const modal = document.getElementById('infoModal');
+    const toggleModal = (open) => {
+      modal.classList.toggle('hidden', !open);
+      modal.classList.toggle('flex', open);
+    };
+    document.getElementById('openModalBtn').addEventListener('click', () => toggleModal(true));
+    document.getElementById('closeModalBtn').addEventListener('click', () => toggleModal(false));
+    document.getElementById('modalOkBtn').addEventListener('click', () => toggleModal(false));
+    modal.addEventListener('click', (e) => { if (e.target === modal) toggleModal(false); });
+
+    // Pointer tracking for particles
+    window.addEventListener('mousemove', (e) => {
+      state.pointer.x = e.clientX;
+      state.pointer.y = e.clientY;
+      state.pointer.active = true;
+    });
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches[0]) {
+        state.pointer.x = e.touches[0].clientX;
+        state.pointer.y = e.touches[0].clientY;
+        state.pointer.active = true;
+      }
+    }, { passive: true });
+    window.addEventListener('mouseleave', () => { state.pointer.active = false; });
+    window.addEventListener('resize', resizeCanvas);
+
+    // ---------- Init ----------
+    window.onload = () => {
+      resizeCanvas();
+      renderControls();
+      animate();
+    };
+  </script>
+</body>
+</html>
+```
